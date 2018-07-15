@@ -6,6 +6,7 @@ import org.dom4j.Document;
 import org.dom4j.Element;
 import org.dom4j.io.SAXReader;
 import org.litespring.beans.BeanDefinition;
+import org.litespring.beans.ConstructorArgument;
 import org.litespring.beans.PropertyValue;
 import org.litespring.beans.factory.config.RuntimeBeanReference;
 import org.litespring.beans.factory.config.TypedStringValue;
@@ -38,6 +39,12 @@ public class XmlBeanDefinitionReader {
     public static final String REF_ATTRIBUTE = "ref";
 
     public static final String PROPERTY_ELEMENT = "property";
+
+    public static final String CONSTRUCTOR_ARG_ELEMENT = "constructor-arg";
+
+    public static final String TYPE_ATTRIBUTE = "type";
+
+
 
     private BeanDefinitionRegistry registry;
 
@@ -82,6 +89,8 @@ public class XmlBeanDefinitionReader {
 
                 this.parsePropertyElement(beanElement, beanDefinition);
 
+                this.parseConstructorArgumentElements(beanElement, beanDefinition);
+
                 this.registry.registerBeanDefinition(id, beanDefinition);
 
             }
@@ -96,6 +105,35 @@ public class XmlBeanDefinitionReader {
                 }
             }
         }
+
+    }
+
+    private void parseConstructorArgumentElements(Element beanElement, BeanDefinition beanDefinition) {
+        Iterator constructorIt = beanElement.elementIterator(CONSTRUCTOR_ARG_ELEMENT);
+
+        while (constructorIt.hasNext()) {
+            Element constructorElement = (Element) constructorIt.next();
+            this.parseConstructorArgumentElement(constructorElement, beanDefinition);
+        }
+    }
+
+    private void parseConstructorArgumentElement(Element constructorElement, BeanDefinition beanDefinition) {
+
+        String typeAttribute = constructorElement.attributeValue(TYPE_ATTRIBUTE);
+
+        String nameAttribute = constructorElement.attributeValue(NAME_ATTRIBUTE);
+
+        Object value = this.parsePropertyValue(constructorElement, beanDefinition, CONSTRUCTOR_ARG_ELEMENT);
+
+        ConstructorArgument.ValueHolder valueHolder = new ConstructorArgument.ValueHolder(value);
+
+        if (StringUtils.hasLength(typeAttribute)) {
+            valueHolder.setType(typeAttribute);
+        } else if (StringUtils.hasLength(nameAttribute)) {
+            valueHolder.setName(nameAttribute);
+        }
+
+        beanDefinition.getConstructorArgument().addArgumentValue(valueHolder);
 
     }
 

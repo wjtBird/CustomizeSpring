@@ -5,6 +5,7 @@ package org.litespring.exception;
  * Created by wjt on 2018/6/9.
  */
 public class BeanCreationException extends BeanException {
+    private String beanName;
 
     public BeanCreationException() {
     }
@@ -17,6 +18,15 @@ public class BeanCreationException extends BeanException {
         super(message, cause);
     }
 
+    public BeanCreationException(String beanName, String msg) {
+        super("Error creating bean with name '" + beanName + "': " + msg);
+        this.beanName = beanName;
+    }
+
+    public BeanCreationException(String beanName, String msg, Throwable cause) {
+        this(beanName, msg);
+        initCause(cause);
+    }
     public BeanCreationException(Throwable cause) {
         super(cause);
     }
