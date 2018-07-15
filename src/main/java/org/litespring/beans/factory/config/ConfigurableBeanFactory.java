@@ -1,6 +1,6 @@
 package org.litespring.beans.factory.config;
 
-import org.litespring.beans.BeanFactory;
+import org.litespring.beans.factory.BeanFactory;
 
 /**
  * Created by wjt on 2018/6/17.
