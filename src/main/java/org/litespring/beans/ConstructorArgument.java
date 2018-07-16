@@ -9,7 +9,7 @@ import java.util.List;
  */
 public class ConstructorArgument {
 
-    private final List<ValueHolder> argumentValues = new LinkedList<>();
+    private final List<ValueHolder> argumentValues = new LinkedList<ValueHolder>();
 
     public ConstructorArgument() {
     }
