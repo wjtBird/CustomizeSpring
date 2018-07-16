@@ -1,8 +1,8 @@
 package org.litespring.core.io;
 
 import org.litespring.util.Assert;
-import org.litespring.util.ClassUtils;
 
+import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -14,17 +14,17 @@ public class FileSystemResource implements Resource {
 
 
     private String filePath;
-    private ClassLoader classLoader;
+    private File file;
 
-    public FileSystemResource(String filePath) {
-        this(filePath, null);
+    public FileSystemResource(File file) {
+        this.filePath = file.getPath();
+        this.file = file;
     }
-
-    public FileSystemResource(String filePath, ClassLoader classLoader) {
-        this.filePath = filePath;
-        this.classLoader = classLoader == null ? ClassUtils.getDefaultClassLoader() : classLoader;
+    public FileSystemResource(String path) {
+        Assert.notNull(path, "Path must not be null");
+        this.file = new File(path);
+        this.filePath = path;
     }
-
     @Override
     public InputStream getInputStream() throws IOException {
 

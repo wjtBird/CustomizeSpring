@@ -18,7 +18,7 @@ public class GenericBeanDefinition implements BeanDefinition {
     private boolean isPrototype = false;
     private String scope = SCOPE_DEFAULT;
 
-    private List<PropertyValue> propertyValues = new ArrayList<>();
+    private List<PropertyValue> propertyValues = new ArrayList<PropertyValue>();
 
     private ConstructorArgument constructorArgument = new ConstructorArgument();
 
@@ -78,4 +78,11 @@ public class GenericBeanDefinition implements BeanDefinition {
         return this.beanId;
     }
 
+    public void setId(String id) {
+        this.beanId = id;
+    }
+
+    protected void setBeanClassName(String className) {
+        this.beanClassName = className;
+    }
 }
