@@ -3,7 +3,11 @@ package org.litespring.beans.factory.support;
 import org.litespring.beans.BeanDefinition;
 import org.litespring.beans.PropertyValue;
 import org.litespring.beans.SimpleTypeConverter;
+import org.litespring.beans.factory.annotation.AutowiredAnnotationProcessor;
+import org.litespring.beans.factory.config.BeanPostProcessor;
 import org.litespring.beans.factory.config.ConfigurableBeanFactory;
+import org.litespring.beans.factory.config.DependencyDescriptor;
+import org.litespring.beans.factory.config.InstantiationAwareBeanPostProcessor;
 import org.litespring.exception.BeanCreationException;
 import org.litespring.exception.BeanDefinitionStoreException;
 import org.litespring.util.ClassUtils;
@@ -11,6 +15,7 @@ import org.litespring.util.ClassUtils;
 import java.beans.BeanInfo;
 import java.beans.Introspector;
 import java.beans.PropertyDescriptor;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -23,6 +28,8 @@ public class DefaultBeanFactory extends DefaultSingletonBeanRegistry
 
     private final Map<String, BeanDefinition> beanDefinitionMap = new ConcurrentHashMap<String, BeanDefinition>();
     private ClassLoader beanClassLoader;
+    private List<BeanPostProcessor> beanPostProcessors = new ArrayList<BeanPostProcessor>();
+
 
 
     public DefaultBeanFactory() {
@@ -75,51 +82,49 @@ public class DefaultBeanFactory extends DefaultSingletonBeanRegistry
 
     }
 
-    private void populateBean(BeanDefinition beanDefinition, Object bean) {
+    private void populateBean(BeanDefinition bd, Object bean) {
 
-        try {
+        for(BeanPostProcessor processor : this.getBeanPostProcessors()){
+            if(processor instanceof InstantiationAwareBeanPostProcessor){
+                ((InstantiationAwareBeanPostProcessor)processor).postProcessPropertyValues(bean, bd.getID());
+            }
+        }
 
-            List<PropertyValue> propertyValueList = beanDefinition.getPropertyValues();
+        List<PropertyValue> pvs = bd.getPropertyValues();
 
+        if (pvs == null || pvs.isEmpty()) {
+            return;
+        }
 
-            BeanDefinitionValueResolver resolver = new BeanDefinitionValueResolver(this);
+        BeanDefinitionValueResolver valueResolver = new BeanDefinitionValueResolver(this);
+        SimpleTypeConverter converter = new SimpleTypeConverter();
+        try{
+            for (PropertyValue pv : pvs){
+                String propertyName = pv.getName();
+                Object originalValue = pv.getValue();
+                Object resolvedValue = valueResolver.resolveValueIfNecessary(originalValue);
 
-            SimpleTypeConverter typeConverter = new SimpleTypeConverter();
-
-
-            for (PropertyValue propertyValue : propertyValueList) {
-
-                String propertyName = propertyValue.getName();
-                Object originalValue = propertyValue.getValue();
-
-                Object resolveValue = resolver.resolveValueIfNecessary(originalValue);
-
-                //获取bean的信息
                 BeanInfo beanInfo = Introspector.getBeanInfo(bean.getClass());
-
-                //获取bean属性描述
-                PropertyDescriptor[] propertyDescriptors = beanInfo.getPropertyDescriptors();
-
-                for (PropertyDescriptor propertyDescriptor : propertyDescriptors) {
-
-                    if (propertyDescriptor.getName().equals(propertyName)) {
-                        Object covertValue = typeConverter.convertIfNecessary(resolveValue, propertyDescriptor.getPropertyType());
-
-                        //使用set方法给bean属性进行设置
-                        propertyDescriptor.getWriteMethod().invoke(bean, covertValue);
+                PropertyDescriptor[] pds = beanInfo.getPropertyDescriptors();
+                for (PropertyDescriptor pd : pds) {
+                    if(pd.getName().equals(propertyName)){
+                        Object convertedValue = converter.convertIfNecessary(resolvedValue, pd.getPropertyType());
+                        pd.getWriteMethod().invoke(bean, convertedValue);
                         break;
-
                     }
-
                 }
 
 
             }
-        } catch (Exception e) {
-            throw new BeanCreationException("Failed to obtain BeanInfo for class [" + beanDefinition.getBeanClassName() + "]", e);
+        }catch(Exception ex){
+            throw new BeanCreationException("Failed to obtain BeanInfo for class [" + bd.getBeanClassName() + "]", ex);
         }
 
 
+    }
+
+    public List<BeanPostProcessor> getBeanPostProcessors() {
+        return this.beanPostProcessors;
     }
 
     private Object instantiateBean(BeanDefinition beanDefinition) {
@@ -155,5 +160,38 @@ public class DefaultBeanFactory extends DefaultSingletonBeanRegistry
         return this.beanClassLoader == null ? ClassUtils.getDefaultClassLoader() : this.beanClassLoader;
     }
 
+    @Override
+    public Object resolveDependency(DependencyDescriptor dependencyDescriptor) {
 
+        Class<?> dependencyType = dependencyDescriptor.getDependencyType();
+
+        for (BeanDefinition beanDefinition : this.beanDefinitionMap.values()) {
+
+            this.resolveBeanClass(beanDefinition);
+
+            Class<?> beanClass = beanDefinition.getBeanClass();
+
+            if (dependencyType.isAssignableFrom(beanClass)) {
+                return this.getBean(beanDefinition.getID());
+            }
+        }
+        return null;
+    }
+
+    public void resolveBeanClass(BeanDefinition bd) {
+        if(bd.hasBeanClass()){
+            return;
+        } else{
+            try {
+                bd.resolveBeanClass(this.getBeanClassLoader());
+            } catch (ClassNotFoundException e) {
+                throw new RuntimeException("can't load class:"+bd.getBeanClassName());
+            }
+        }
+    }
+
+    @Override
+    public void addBeanPostProcessor(AutowiredAnnotationProcessor postProcessor) {
+        this.beanPostProcessors.add(postProcessor);
+    }
 }
