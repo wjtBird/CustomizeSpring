@@ -56,10 +56,6 @@ public class XmlBeanDefinitionReader {
 
     private final Log logger =  LogFactory.getLog(this.getClass());
 
-    public XmlBeanDefinitionReader() {
-
-    }
-
     public XmlBeanDefinitionReader(BeanDefinitionRegistry registry) {
         this.registry = registry;
     }
