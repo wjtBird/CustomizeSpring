@@ -113,7 +113,7 @@ public class AutowiredAnnotationProcessor implements InstantiationAwareBeanPostP
 
     @Override
     public void postProcessPropertyValues(Object bean, String beanName) throws BeansException {
-        InjectionMetadata metadata = buildAutowiringMetadata(bean.getClass());
+        InjectionMetadata metadata = this.buildAutowiringMetadata(bean.getClass());
         try {
             metadata.inject(bean);
         }

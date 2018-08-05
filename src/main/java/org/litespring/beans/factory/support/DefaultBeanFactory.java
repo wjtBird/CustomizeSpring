@@ -3,6 +3,7 @@ package org.litespring.beans.factory.support;
 import org.litespring.beans.BeanDefinition;
 import org.litespring.beans.PropertyValue;
 import org.litespring.beans.SimpleTypeConverter;
+import org.litespring.beans.factory.NoSuchBeanDefinitionException;
 import org.litespring.beans.factory.annotation.AutowiredAnnotationProcessor;
 import org.litespring.beans.factory.config.BeanPostProcessor;
 import org.litespring.beans.factory.config.ConfigurableBeanFactory;
@@ -193,5 +194,15 @@ public class DefaultBeanFactory extends DefaultSingletonBeanRegistry
     @Override
     public void addBeanPostProcessor(AutowiredAnnotationProcessor postProcessor) {
         this.beanPostProcessors.add(postProcessor);
+    }
+
+    @Override
+    public Class<?> getType(String name) throws NoSuchBeanDefinitionException {
+        BeanDefinition bd = this.getBeanDefinition(name);
+        if(bd == null){
+            throw new NoSuchBeanDefinitionException(name);
+        }
+        this.resolveBeanClass(bd);
+        return bd.getBeanClass();
     }
 }
