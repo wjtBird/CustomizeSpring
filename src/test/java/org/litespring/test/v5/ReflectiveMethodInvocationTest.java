@@ -7,7 +7,9 @@ import org.junit.Test;
 import org.litespring.aop.aspectj.AspectJAfterReturningAdvice;
 import org.litespring.aop.aspectj.AspectJAfterThrowingAdvice;
 import org.litespring.aop.aspectj.AspectJBeforeAdvice;
+import org.litespring.aop.config.AspectInstanceFactory;
 import org.litespring.aop.framework.ReflectiveMethodInvocation;
+import org.litespring.beans.factory.BeanFactory;
 import org.litespring.service.v5.PetStoreService;
 import org.litespring.tx.TransactionManager;
 import org.litespring.util.MessageTracker;
@@ -19,36 +21,40 @@ import java.util.List;
 /**
  * @author jintao.wang
  */
-public class ReflectiveMethodInvocationTest {
+public class ReflectiveMethodInvocationTest extends AbstractV5Test {
 
 
     private AspectJBeforeAdvice beforeAdvice = null;
     private AspectJAfterReturningAdvice afterAdvice = null;
     private AspectJAfterThrowingAdvice afterThrowingAdvice = null;
     private PetStoreService petStoreService = null;
-    private TransactionManager tx;
 
+    private BeanFactory beanFactory;
+    private AspectInstanceFactory aspectInstanceFactory;
 
     @Before
     public  void setUp() throws Exception{
         petStoreService = new PetStoreService();
-        tx = new TransactionManager();
+
+        this.beanFactory = super.getBeanFactory("petstore-v5.xml");
+        this.aspectInstanceFactory = super.getAspectInstanceFactory("tx");
+        this.aspectInstanceFactory.setBeanFactory(beanFactory);
 
         MessageTracker.clearMsgs();
         beforeAdvice = new AspectJBeforeAdvice(
                 TransactionManager.class.getMethod("start"),
                 null,
-                tx);
+                this.aspectInstanceFactory);
 
         afterAdvice = new AspectJAfterReturningAdvice(
                 TransactionManager.class.getMethod("commit"),
                 null,
-                tx);
+                this.aspectInstanceFactory);
 
         afterThrowingAdvice = new AspectJAfterThrowingAdvice(
                 TransactionManager.class.getMethod("rollback"),
                 null,
-                tx
+                this.aspectInstanceFactory
         );
 
     }
