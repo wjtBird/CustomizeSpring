@@ -70,7 +70,7 @@ public class BeanFactoryTest {
     public void beanDefinitionStoreExceptionTest() {
 
 
-        this.reader.loadBeanDefinitions(new ClassPathResource("petstore-v1.xml"));
+        this.reader.loadBeanDefinitions(new ClassPathResource("xxxxxx.xml"));
 
         BeanDefinition beanDefinition = this.factory.getBeanDefinition("petStore2");
 

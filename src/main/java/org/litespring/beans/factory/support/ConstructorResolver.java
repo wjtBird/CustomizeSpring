@@ -5,7 +5,6 @@ import org.apache.commons.logging.LogFactory;
 import org.litespring.beans.BeanDefinition;
 import org.litespring.beans.ConstructorArgument;
 import org.litespring.beans.SimpleTypeConverter;
-import org.litespring.beans.factory.config.ConfigurableBeanFactory;
 import org.litespring.exception.BeanCreationException;
 
 import java.lang.reflect.Constructor;
@@ -19,18 +18,18 @@ public class ConstructorResolver {
 
     private final Log logger = LogFactory.getLog(this.getClass());
 
-    private final ConfigurableBeanFactory factory;
+    private final AbstractBeanFactory abstractBeanFactory;
 
 
-    public ConstructorResolver(ConfigurableBeanFactory factory) {
-        this.factory = factory;
+    public ConstructorResolver(AbstractBeanFactory abstractBeanFactory) {
+        this.abstractBeanFactory = abstractBeanFactory;
     }
 
     public Object autoWriteConstructor(final BeanDefinition beanDefinition) {
 
         Class cls;
         try {
-            cls = this.factory.getBeanClassLoader().loadClass(beanDefinition.getBeanClassName());
+            cls = this.abstractBeanFactory.getBeanClassLoader().loadClass(beanDefinition.getBeanClassName());
         } catch (ClassNotFoundException e) {
             throw new BeanCreationException( beanDefinition.getID(), "Instantiation of bean failed, can't resolve class", e);
 
@@ -40,7 +39,7 @@ public class ConstructorResolver {
 
         ConstructorArgument constructorArgument = beanDefinition.getConstructorArgument();
 
-        BeanDefinitionValueResolver valueResolver = new BeanDefinitionValueResolver(this.factory);
+        BeanDefinitionValueResolver valueResolver = new BeanDefinitionValueResolver(this.abstractBeanFactory);
 
         SimpleTypeConverter typeConverter = new SimpleTypeConverter();
 

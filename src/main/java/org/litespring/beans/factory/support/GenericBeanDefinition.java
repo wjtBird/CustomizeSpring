@@ -23,6 +23,8 @@ public class GenericBeanDefinition implements BeanDefinition {
 
     private ConstructorArgument constructorArgument = new ConstructorArgument();
 
+    private boolean isSynthetic = false;
+
     public GenericBeanDefinition() {
     }
 
@@ -31,6 +33,10 @@ public class GenericBeanDefinition implements BeanDefinition {
         this.beanClassName = beanClassName;
     }
 
+    public GenericBeanDefinition(Class<?> beanClass) {
+        this.beanClass = beanClass;
+        this.beanClassName = beanClass.getName();
+    }
 
     @Override
     public String getBeanClassName() {
@@ -111,5 +117,14 @@ public class GenericBeanDefinition implements BeanDefinition {
 
     protected void setBeanClassName(String className) {
         this.beanClassName = className;
+    }
+
+    public void setSynthetic(boolean isSynthetic) {
+        this.isSynthetic = isSynthetic;
+    }
+
+    @Override
+    public boolean isSynthetic() {
+        return this.isSynthetic;
     }
 }
