@@ -121,7 +121,7 @@ public class ConfigBeanDefinitionParser /*implements BeanDefinitionParser*/ {
 		aspectFactoryDef.getPropertyValues().add(new PropertyValue("aspectBeanName", aspectName));
 		aspectFactoryDef.setSynthetic(true);
 
-		// register the pointcut
+		// create the advice
 		GenericBeanDefinition adviceDef = createAdviceDefinition(
 				adviceElement, registry, aspectName, order, methodDefinition, aspectFactoryDef,
 				beanDefinitions, beanReferences);

@@ -205,6 +205,7 @@ public class DefaultBeanFactory extends AbstractBeanFactory
         this.beanClassLoader = beanClassLoader;
     }
 
+
     @Override
     public ClassLoader getBeanClassLoader() {
         return this.beanClassLoader == null ? ClassUtils.getDefaultClassLoader() : this.beanClassLoader;

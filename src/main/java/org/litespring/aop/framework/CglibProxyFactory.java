@@ -113,8 +113,8 @@ public class CglibProxyFactory implements AopProxyFactory {
 				enhancer.setClassLoader(classLoader);				
 			}
 			enhancer.setSuperclass(rootClass);
-			
-			enhancer.setNamingPolicy(SpringNamingPolicy.INSTANCE); //"BySpringCGLIB"
+			//"BySpringCGLIB"
+			enhancer.setNamingPolicy(SpringNamingPolicy.INSTANCE);
 			enhancer.setInterceptDuringConstruction(false);
 
 			Callback[] callbacks = getCallbacks(rootClass);
